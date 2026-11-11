@@ -1,0 +1,18 @@
+# Virtuell miljö
+ai-miljo/
+venv/
+.venv/
+
+# Bilddata och tränade modeller är för stora för GitHub
+data/
+data_*/
+modeller/*.pth
+
+# Python-skräp
+__pycache__/
+*.pyc
+
+# Editor/OS
+.vscode/
+Thumbs.db
+.DS_Store
