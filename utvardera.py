@@ -3,15 +3,18 @@ utvardera.py - mäter hur bra MCA-5 klarar sig, och hur suddighet och
 ljus påverkar den. Det här är kärnan i GA-undersökningen.
 
 Kör (efter trana.py):
-    python utvardera.py
-    python utvardera.py --modell modeller/mca5.pth --data data
+    python utvardera.py                       # senast tränade modellen
+    python utvardera.py --modell mca5_robust  # en viss modellmapp
+    python utvardera.py --data foton_V1       # testa på ett annat dataset
+
+Utan --data används testbilderna från datasetet modellen tränades på.
 
 Gör tre saker:
   1. Träffsäkerhet per form på de vanliga testbilderna.
   2. Förväxlingsmatris: vilka former blandas ihop?
   3. Robusthetstest: samma testbilder med ökande suddighet och med
      för mörkt/för ljust ljus. Resultatet sparas i
-     resultat/robusthet.csv så att ni kan göra grafer i rapporten.
+     robusthet.csv i modellens mapp, så att ni kan göra grafer i rapporten.
 
 Samma störningsnivåer kan sedan användas på bilderna ni skickar till
 ChatGPT och Claude, så att jämförelsen blir rättvis.
@@ -25,8 +28,8 @@ import torch
 from PIL import Image, ImageEnhance, ImageFilter
 from torchvision import datasets
 
-from data_laddning import test_transform
-from modell import MCA5
+from data_laddning import hitta_dataset, test_transform
+from modell import MCA5, hitta_modellmapp
 
 # Störningsnivåer. 0 / 1.0 = ingen störning.
 SUDDIGHET = [0, 1, 2, 3, 4, 6, 8]                   # Gaussisk oskärpa, radie i pixlar (på 224x224)
@@ -73,13 +76,27 @@ def träff(resultat):
 
 def main():
     parser = argparse.ArgumentParser(description="Utvärdera MCA-5")
-    parser.add_argument("--modell", default="modeller/mca5.pth")
-    parser.add_argument("--data", default="data")
+    parser.add_argument("--modell", default=None, help="modellmappens namn (standard: senast tränade)")
+    parser.add_argument("--data", default=None, help="dataset att testa på (standard: det modellen tränades på)")
     args = parser.parse_args()
 
     enhet = "cuda" if torch.cuda.is_available() else "cpu"
-    modell, kategorier = ladda_modell(args.modell, enhet)
-    sökvägar = datasets.ImageFolder(Path(args.data) / "test").samples
+    mapp = hitta_modellmapp(args.modell)
+    print("Modell:", mapp)
+    modell, kategorier = ladda_modell(mapp / "modell.pth", enhet)
+
+    if args.data:
+        dataset = hitta_dataset(args.data)
+    else:
+        tränad_på = torch.load(mapp / "modell.pth", map_location="cpu").get("dataset")
+        if tränad_på and Path(tränad_på, "test").exists():
+            dataset = Path(tränad_på)
+        elif Path("data", "test").exists():  # äldre modeller (t.ex. mca5_V1)
+            dataset = Path("data")
+        else:
+            dataset = hitta_dataset()
+    print("Testar på dataset:", dataset)
+    sökvägar = datasets.ImageFolder(dataset / "test").samples
 
     # 1. Träffsäkerhet per form
     res = testa(modell, sökvägar, enhet)
@@ -98,8 +115,8 @@ def main():
         print(f"  {namn:9s}" + "".join(f"{x:7d}" for x in rad))
 
     # 3. Robusthet mot suddighet och ljus
-    Path("resultat").mkdir(exist_ok=True)
-    with open("resultat/robusthet.csv", "w", newline="") as f:
+    resultatfil = mapp / "robusthet.csv"
+    with open(resultatfil, "w", newline="", encoding="utf-8-sig") as f:
         skriv = csv.writer(f)
         skriv.writerow(["störning", "nivå", "träffsäkerhet"])
 
@@ -115,7 +132,7 @@ def main():
             skriv.writerow(["ljus", l, f"{t:.4f}"])
             print(f"  {l:4}  {t:6.1%}  " + "#" * int(t * 40))
 
-    print("\nSparat: resultat/robusthet.csv")
+    print("\nSparat:", resultatfil)
 
 
 if __name__ == "__main__":

@@ -3,16 +3,19 @@ generera_data.py - skapar syntetiska träningsbilder åt MCA-5.
 
 Ritar former som ser ungefär handritade ut (lite darriga streck) med
 slumpad storlek, position, rotation, linjetjocklek, pappersfärg och brus.
-Bilderna sparas som 224x224 PNG i samma mappstruktur som era riktiga
-kamerabilder ska ha, så resten av koden fungerar likadant med båda:
+Varje körning skapar ett eget dataset i en ny mapp med datum och tid som
+namn, i samma struktur som era riktiga kamerabilder ska ha:
 
-    data/train/<form>/00000.png
-    data/test/<form>/00000.png
+    dataset/2026-11-11_21-20/train/<form>/syn_00000.png
+    dataset/2026-11-11_21-20/test/<form>/syn_00000.png
+    dataset/2026-11-11_21-20/info.txt
+
+Döp om mappen fritt efteråt (t.ex. till syntetisk_V1).
 
 Kör:
     python generera_data.py                 # 1000 train + 200 test per form
     python generera_data.py --train 3000 --test 500
-    python generera_data.py --ut data_syntetisk   # annan mapp
+    python generera_data.py --seed 7        # andra slumpade bilder
 
 Samma --seed ger exakt samma bilder varje gång (bra för att kunna
 upprepa experiment i GA:t).
@@ -21,6 +24,7 @@ upprepa experiment i GA:t).
 import argparse
 import math
 import random
+from datetime import datetime
 from pathlib import Path
 
 import numpy as np
@@ -29,8 +33,8 @@ from PIL import Image, ImageDraw, ImageFilter
 BILDSTORLEK = 224
 
 # Formerna MCA-5 ska känna igen. Mappnamnen blir kategorierna.
-FORMER = ["circle", "square", "triangle", "star",
-          "hexagon", "pentagon", "line", "zigzag"]
+# Avgränsat till tre former.
+FORMER = ["circle", "square", "triangle"]
 
 
 # ---------------------------------------------------------------------------
@@ -97,39 +101,6 @@ def form_triangle(cx, cy, r):
     return regelbunden_polygon(cx, cy, r, 3)
 
 
-def form_pentagon(cx, cy, r):
-    return regelbunden_polygon(cx, cy, r, 5)
-
-
-def form_hexagon(cx, cy, r):
-    return regelbunden_polygon(cx, cy, r, 6)
-
-
-def form_star(cx, cy, r):
-    inre = r * random.uniform(0.35, 0.5)
-    p = []
-    for i in range(10):
-        radie = r if i % 2 == 0 else inre
-        v = -math.pi / 2 + math.pi * i / 5
-        p.append((cx + radie * math.cos(v), cy + radie * math.sin(v)))
-    return p + [p[0]]
-
-
-def form_line(cx, cy, r):
-    return [(cx - r, cy), (cx + r, cy)]
-
-
-def form_zigzag(cx, cy, r):
-    toppar = random.randint(3, 6)
-    höjd = r * random.uniform(0.3, 0.6)
-    p = []
-    for i in range(toppar * 2 + 1):
-        x = cx - r + 2 * r * i / (toppar * 2)
-        y = cy + (höjd if i % 2 else -höjd)
-        p.append((x, y))
-    return p
-
-
 RITFUNKTIONER = {namn: globals()[f"form_{namn}"] for namn in FORMER}
 
 
@@ -176,22 +147,35 @@ def main():
     parser = argparse.ArgumentParser(description="Skapa syntetisk data åt MCA-5")
     parser.add_argument("--train", type=int, default=1000, help="bilder per form i train")
     parser.add_argument("--test", type=int, default=200, help="bilder per form i test")
-    parser.add_argument("--ut", default="data", help="mapp att spara i")
+    parser.add_argument("--ut", default=None,
+                        help="mapp att spara i (standard: dataset/<datum_tid>)")
     parser.add_argument("--seed", type=int, default=42)
     args = parser.parse_args()
 
     random.seed(args.seed)
     np.random.seed(args.seed)
 
+    ut = Path(args.ut) if args.ut else Path("dataset") / datetime.now().strftime("%Y-%m-%d_%H-%M")
+    if ut.exists():
+        raise FileExistsError(f"{ut} finns redan. Vänta en minut eller välj --ut.")
+    ut.mkdir(parents=True)
+
     for del_namn, antal in [("train", args.train), ("test", args.test)]:
         for form in FORMER:
-            mapp = Path(args.ut) / del_namn / form
+            mapp = ut / del_namn / form
             mapp.mkdir(parents=True, exist_ok=True)
             for i in range(antal):
                 skapa_bild(form).save(mapp / f"syn_{i:05d}.png")
             print(f"{del_namn:5s} {form:9s} {antal} bilder -> {mapp}")
 
-    print("Klart!")
+    (ut / "info.txt").write_text(
+        f"Skapad:  {datetime.now():%Y-%m-%d %H:%M}\n"
+        f"Typ:     syntetisk (generera_data.py)\n"
+        f"Former:  {', '.join(FORMER)}\n"
+        f"Antal:   {args.train} train + {args.test} test per form\n"
+        f"Seed:    {args.seed}\n",
+        encoding="utf-8")
+    print(f"Klart! Dataset sparat i {ut}")
 
 
 if __name__ == "__main__":

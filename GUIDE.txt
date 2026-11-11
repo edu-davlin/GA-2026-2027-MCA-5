@@ -1,0 +1,39 @@
+MCA-5 - QUICK GUIDE
+====================
+
+0. START (every time you open VS Code)
+   Terminal > New Terminal, then:
+   C:\Users\David\ai-miljo\Scripts\Activate.ps1
+   -> "(ai-miljo)" should appear at the start of the line
+
+1. GENERATE DATA
+   python generera_data.py
+   -> creates dataset\<date_time>\
+   -> rename the folder, e.g. to dataset_1
+   (other random images: python generera_data.py --seed 7)
+
+2. TRAIN A NEW MODEL
+   python trana.py --data dataset_1
+   -> creates modeller\<date_time>\
+   -> rename the folder, e.g. to mca5_V1
+
+3. TEST + MAKE GRAPHS
+   python utvardera.py --modell mca5_V1
+   python grafer.py --modell mca5_V1
+   -> results and graphs are saved in modeller\mca5_V1\
+
+4. FINE-TUNE (keep training an existing model)
+   python trana.py --fortsatt mca5_V1 --data dataset_2
+   -> creates a NEW folder modeller\<date_time>\
+   -> rename it, e.g. to mca5_V2 (mca5_V1 is not changed)
+   -> then run step 3 again with --modell mca5_V2
+   -> repeat as many times as you want (V2 -> V3 -> V4 ...)
+
+5. SAVE TO GITHUB
+   GitHub Desktop: write a summary -> Commit to main -> Push origin
+
+TIPS
+- More epochs:           add --epoker 30 to trana.py
+- Test on other data:    python utvardera.py --modell mca5_V1 --data dataset_2
+- info.txt in each folder shows how it was created
+- Same shapes (circle, square, triangle) are required to fine-tune

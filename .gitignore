@@ -6,7 +6,8 @@ venv/
 # Bilddata och tränade modeller är för stora för GitHub
 data/
 data_*/
-modeller/*.pth
+dataset/
+modeller/**/*.pth
 
 # Python-skräp
 __pycache__/
