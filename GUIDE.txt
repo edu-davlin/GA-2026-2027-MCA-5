@@ -10,7 +10,16 @@ MCA-5 - QUICK GUIDE
    python generera_data.py
    -> creates dataset\<date_time>\
    -> rename the folder, e.g. to dataset_1
-   (other random images: python generera_data.py --seed 7)
+   (default: 1000 train + 200 test images per shape, seed 42)
+
+   Bigger dataset and/or other seed:
+   python generera_data.py --train 5000 --test 1000 --seed 7
+   --train  = training images per shape
+   --test   = test images per shape (about 20% of --train)
+   --seed   = any number, gives different random images
+   -> same seed + same numbers = exactly the same images
+   -> the seed is saved in the dataset's info.txt
+   -> bigger dataset = longer training (5000/shape ~45 s per epoch)
 
 2. TRAIN A NEW MODEL
    python trana.py --data dataset_1
