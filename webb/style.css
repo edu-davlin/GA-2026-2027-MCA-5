@@ -1,0 +1,69 @@
+/* style.css - utseendet för MCA-5:s webbsida (ESP-stil) */
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  height: 100%;
+  background: #000;
+  overflow: hidden;
+  font-family: "Segoe UI", Tahoma, sans-serif;
+  color: #fff;
+}
+
+/* Kameran och overlayn täcker hela fönstret */
+#video, #overlay {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  object-fit: cover;
+}
+
+/* Modellrutan uppe till vänster */
+.hud {
+  position: fixed;
+  top: 14px;
+  left: 14px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 8px 6px 12px;
+  background: rgba(0, 0, 0, 0.55);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 6px;
+  font-size: 13px;
+}
+
+.logga {
+  font-weight: 700;
+  letter-spacing: 1px;
+  color: #ff7a2f;
+}
+
+.hud select {
+  background: transparent;
+  color: #fff;
+  border: none;
+  font: inherit;
+  cursor: pointer;
+  outline: none;
+}
+
+.hud select option { background: #111; }
+
+/* Felmeddelande i mitten (t.ex. om kameran är blockerad) */
+.meddelande {
+  position: fixed;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  max-width: 420px;
+  padding: 16px 20px;
+  background: rgba(0, 0, 0, 0.75);
+  border-radius: 8px;
+  text-align: center;
+  font-size: 15px;
+  line-height: 1.5;
+  display: none;
+}

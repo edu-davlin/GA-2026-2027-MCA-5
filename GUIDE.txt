@@ -21,6 +21,22 @@ MCA-5 - QUICK GUIDE
    -> the seed is saved in the dataset's info.txt
    -> bigger dataset = longer training (5000/shape ~45 s per epoch)
 
+1b. PHOTOGRAPH REAL SHAPES (webcam)
+   First time only: pip install opencv-python
+   python fota.py --data foton_1 --del train
+   python fota.py --data foton_1 --del test
+   -> hold up the paper and press:
+      1 = circle   2 = square   3 = triangle
+      0 = no paper (just background)   Z = undo   Q = quit
+   -> BLUE frame  = paper found, background is cut away automatically
+      GREEN frame = no paper found, keep the paper inside the green square
+   -> top right shows exactly the image that gets saved
+   -> saved in dataset\foton_1\train\<shape>\ (or test)
+   -> full camera images are also saved in dataset\foton_1\_original\
+   -> use DIFFERENT papers for test than for train
+      (e.g. put every 5th paper aside for test)
+   -> vary light, background and angle between sessions
+
 2. TRAIN A NEW MODEL
    python trana.py --data dataset_1
    -> creates modeller\<date_time>\
@@ -38,11 +54,20 @@ MCA-5 - QUICK GUIDE
    -> then run step 3 again with --modell mca5_V2
    -> repeat as many times as you want (V2 -> V3 -> V4 ...)
 
-5. SAVE TO GITHUB
+5. WEBSITE
+   First time only: pip install flask
+   python webbsida.py
+   -> open http://localhost:5000 and press "Starta kamera"
+   -> choose model in the dropdown (all folders in modeller\)
+   -> stop with Ctrl+C in the terminal
+   -> only reachable from your own computer
+
+6. SAVE TO GITHUB
    GitHub Desktop: write a summary -> Commit to main -> Push origin
 
 TIPS
 - More epochs:           add --epoker 30 to trana.py
 - Test on other data:    python utvardera.py --modell mca5_V1 --data dataset_2
 - info.txt in each folder shows how it was created
-- Same shapes (circle, square, triangle) are required to fine-tune
+- Fine-tuning: new data must have all shapes the model knows,
+  but may add new ones (e.g. "ingen" = no paper)

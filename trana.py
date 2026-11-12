@@ -8,7 +8,8 @@ Kör:
 
 --fortsatt (finjustering): istället för att börja från noll laddas vikterna
 från en tidigare modell, som sedan tränas vidare på (ny) data. Resultatet
-sparas som en NY modellmapp, så originalet är orört. Den nya modellen kan
+sparas som en NY modellmapp, så originalet är orört. Den nya datan får
+innehålla fler kategorier än originalet (t.ex. "ingen"), men inte färre. Den nya modellen kan
 i sin tur finjusteras igen, hur många gånger som helst. I info.txt i
 mappen står vilken modell den byggde vidare på.
 
@@ -89,11 +90,30 @@ def main():
     if args.fortsatt:
         grund = hitta_modellmapp(args.fortsatt)
         sparat = torch.load(grund / "modell.pth", map_location=enhet)
-        if sparat["kategorier"] != kategorier:
+        gamla = sparat["kategorier"]
+        if gamla == kategorier:
+            modell.load_state_dict(sparat["vikter"])
+        elif set(gamla) <= set(kategorier):
+            # Nya kategorier har tillkommit (t.ex. "ingen"). Allt utom sista
+            # lagret kopieras. I sista lagret kopieras raderna för de former
+            # modellen redan kan; de nya börjar från noll och lärs in nu.
+            vikter = sparat["vikter"]
+            sista_v, sista_b = "klassificerare.4.weight", "klassificerare.4.bias"
+            egna = modell.state_dict()
+            for nyckel, värde in vikter.items():
+                if nyckel not in (sista_v, sista_b):
+                    egna[nyckel] = värde
+            for i, namn in enumerate(gamla):
+                j = kategorier.index(namn)
+                egna[sista_v][j] = vikter[sista_v][i]
+                egna[sista_b][j] = vikter[sista_b][i]
+            modell.load_state_dict(egna)
+            print(f"Nya kategorier tillagda: {sorted(set(kategorier) - set(gamla))}")
+        else:
             raise ValueError(
-                f"Formerna matchar inte!\n  {grund.name}: {sparat['kategorier']}\n"
-                f"  datan:   {kategorier}\nFinjustering kräver samma former.")
-        modell.load_state_dict(sparat["vikter"])
+                f"Formerna matchar inte!\n  {grund.name}: {gamla}\n"
+                f"  datan:   {kategorier}\n"
+                f"Datan måste innehålla alla former som modellen redan kan.")
         print(f"Fortsätter från: {grund}\n")
 
     # Lägre inlärningshastighet vid finjustering, så att det modellen redan

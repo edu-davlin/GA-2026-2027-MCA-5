@@ -12,6 +12,10 @@ Avgränsat till tre former: `circle` (cirkel), `square` (fyrkant) och `triangle`
 | Fil | Vad den gör |
 |---|---|
 | `generera_data.py` | Skapar ett nytt syntetiskt dataset i `dataset/<datum_tid>/` med "handritade" bilder (224x224 PNG): slumpad storlek, rotation, linjetjocklek, pappersfärg, brus och lätt oskärpa. |
+| `fota.py` | Fotograferar riktiga handritade former med webbkameran (tangent 1/2/3 = form, 0 = inget papper) och sparar dem i `dataset/<namn>/train` eller `test`, plus hela kamerabilden i `_original/`. Kräver `pip install opencv-python`. |
+| `webbsida.py` | Webbserver (Flask) som kör `papper.py` och MCA-5 på bilderna från webbsidan. Bara nåbar från den egna datorn (`http://localhost:5000`). Kräver `pip install flask`. |
+| `webb/` | Själva webbsidan: `index.html` (innehåll), `style.css` (utseende), `script.js` (kamera och kontakt med servern). |
+| `papper.py` | Hittar papperet i kamerabilden, rätar ut det och klipper bort bakgrunden (klassisk bildanalys med OpenCV). Faller tillbaka på en grön mittruta. Används av `fota.py` och senare webbsidan. |
 | `data_laddning.py` | Läser in bilder från ett dataset i `dataset/`, skalar ner till 64x64 och normaliserar. Lägger på data augmentation (rotation, ljus/kontrast) på träningsbilderna. |
 | `modell.py` | Själva MCA-5: 3 faltningsblock (Conv → BatchNorm → ReLU → MaxPool) och en klassificerare med dropout. Ca 2,2 miljoner vikter. |
 | `trana.py` | Tränar modellen på GPU:n, testar efter varje epok och skapar en mapp `modeller/<datum_tid>/` (t.ex. `2026-11-11_21-05`) med bästa versionen `modell.pth`, `logg.csv` och `info.txt` (hur modellen skapades). |
@@ -87,5 +91,5 @@ Träna en version på syntetisk data och en på riktiga foton (döp om mapparna,
 
 ## Kvar att göra
 - [ ] Samla riktiga kamerabilder
-- [ ] Webbsida (Flask + kamera) som använder modellerna i `modeller/`
+- [x] Webbsida (Flask + kamera) som använder modellerna i `modeller/`
 - [ ] Jämförelse med ChatGPT och Claude

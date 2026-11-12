@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MCA-5</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- Kameran fyller hela fönstret, overlayn ritas ovanpå -->
+  <video id="video" playsinline muted autoplay></video>
+  <canvas id="overlay"></canvas>
+
+  <!-- Liten ruta uppe till vänster: vilken modell som används -->
+  <div class="hud">
+    <span class="logga">MCA-5</span>
+    <select id="modell" title="Byt modell"></select>
+  </div>
+
+  <!-- Visas bara om kameran inte kan startas -->
+  <div class="meddelande" id="meddelande"></div>
+
+  <script src="script.js"></script>
+</body>
+</html>
