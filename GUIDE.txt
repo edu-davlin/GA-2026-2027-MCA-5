@@ -62,6 +62,18 @@ MCA-5 - QUICK GUIDE
    -> stop with Ctrl+C in the terminal
    -> only reachable from your own computer
 
+5b. SHARE THE WEBSITE WITH EVERYONE (optional)
+   First time only: winget install Cloudflare.cloudflared
+   (then close and reopen VS Code)
+   1. Start the website as above (python webbsida.py)
+   2. Open a SECOND terminal (+ in the terminal panel) and run:
+      cloudflared tunnel --url http://localhost:5000
+   3. Copy the https://....trycloudflare.com link and share it
+   -> works on phones too (uses the back camera)
+   -> works while your computer, webbsida.py and cloudflared are running
+   -> stop sharing: Ctrl+C in the cloudflared terminal
+   -> new link every time you restart cloudflared
+
 6. SAVE TO GITHUB
    GitHub Desktop: write a summary -> Commit to main -> Push origin
 

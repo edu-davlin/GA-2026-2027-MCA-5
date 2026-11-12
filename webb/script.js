@@ -29,12 +29,13 @@ async function laddaModeller() {
 // ---------- Kamera ----------
 async function startaKamera() {
   if (!navigator.mediaDevices?.getUserMedia) {
-    visaMeddelande("Kameran fungerar bara på <b>http://localhost:5000</b>.");
+    visaMeddelande("Kameran kräver <b>https://</b> (tunnel-länken) eller <b>http://localhost:5000</b>.");
     return;
   }
   try {
     video.srcObject = await navigator.mediaDevices.getUserMedia({
-      video: { width: { ideal: 1280 }, height: { ideal: 720 } }, audio: false
+      video: { facingMode: { ideal: "environment" }, width: { ideal: 1280 }, height: { ideal: 720 } },
+      audio: false  // "environment" = bakkameran på mobiler
     });
     await video.play();
     skickaLoop();
