@@ -69,7 +69,6 @@ MCA-5 - QUICK GUIDE
    2. Open a SECOND terminal (+ in the terminal panel) and run:
       cloudflared tunnel --url http://localhost:5000
    3. Copy the https://....trycloudflare.com link and share it
-   -> works on phones too (uses the back camera)
    -> works while your computer, webbsida.py and cloudflared are running
    -> stop sharing: Ctrl+C in the cloudflared terminal
    -> new link every time you restart cloudflared

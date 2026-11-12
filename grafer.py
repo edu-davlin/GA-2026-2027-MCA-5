@@ -5,7 +5,9 @@ Kör (efter trana.py och utvardera.py):
     python grafer.py                       # senast utvärderade modellen
     python grafer.py --modell mca5_robust  # en viss modellmapp
 
-Läser robusthet.csv och logg.csv i modellens mapp och sparar graferna där:
+Läser robusthet.csv, logg.csv, testinfo.txt och info.txt i modellens mapp
+och sparar graferna där. Varje graf får en undertitel med modellens namn,
+när den testades/tränades och vilket dataset som användes:
     graf_suddighet.png   - träffsäkerhet vid ökande suddighet
     graf_ljus.png        - träffsäkerhet vid olika ljusnivåer
     graf_traning.png     - hur träffsäkerheten utvecklades under träningen
@@ -38,8 +40,25 @@ def läs_csv(fil):
     raise ValueError(f"Kunde inte läsa {fil}")
 
 
-def snygga_till(ax, titel, xetikett):
-    ax.set_title(titel, loc="left", fontsize=13, fontweight="bold", pad=12)
+UNDERTITEL = ""  # fylls i main() med modell, testdatum och dataset
+
+
+def läs_info(fil):
+    """Läser en info-fil med rader som 'nyckel: värde'."""
+    info = {}
+    if fil.exists():
+        for rad in fil.read_text(encoding="utf-8").splitlines():
+            if ":" in rad:
+                nyckel, värde = rad.split(":", 1)
+                info[nyckel.strip().lower()] = värde.strip()
+    return info
+
+
+def snygga_till(ax, titel, xetikett, undertitel=None):
+    undertitel = UNDERTITEL if undertitel is None else undertitel
+    ax.set_title(titel, loc="left", fontsize=13, fontweight="bold", pad=24 if undertitel else 12)
+    if undertitel:
+        ax.text(0, 1.02, undertitel, transform=ax.transAxes, fontsize=8.5, color=TEXT, va="bottom")
     ax.set_xlabel(xetikett, color=TEXT)
     ax.set_ylabel("Träffsäkerhet (%)", color=TEXT)
     ax.set_ylim(0, 105)
@@ -79,6 +98,12 @@ def main():
     print("Modell:", ut)
     loggfil = ut / "logg.csv"
 
+    # Undertitel: vilken modell, när den testades och på vilket dataset
+    global UNDERTITEL
+    test = läs_info(ut / "testinfo.txt")
+    UNDERTITEL = (f"Modell: {ut.name}   ·   Testad: {test.get('testad', 'okänt')}   ·   "
+                  f"Dataset: {test.get('dataset', 'okänt')} ({test.get('testbilder', '?')} testbilder)")
+
     # Robusthet: dela upp raderna i suddighet och ljus
     rader = läs_csv(ut / "robusthet.csv")
     sudd = [(float(n), float(t) * 100) for s, n, t in rader if s.startswith("sudd")]
@@ -103,7 +128,11 @@ def main():
         ax.annotate("Träning", (epoker[-1], train[-1]), xytext=(6, -4), textcoords="offset points", color=TEXT, fontsize=9)
         ax.annotate("Test", (epoker[-1], test[-1]), xytext=(6, 2), textcoords="offset points", color=TEXT, fontsize=9)
         ax.legend(frameon=False, loc="lower right")
-        snygga_till(ax, "Träffsäkerhet under träningen", "Epok")
+        träning = läs_info(ut / "info.txt")
+        snygga_till(ax, "Träffsäkerhet under träningen", "Epok",
+                    f"Modell: {ut.name}   ·   Tränad: {träning.get('skapad', 'okänt')}   ·   "
+                    f"Dataset: {träning.get('dataset', 'okänt')}   ·   "
+                    f"Byggde vidare på: {träning.get('byggde vidare på', '-')}")
         ax.set_xticks(epoker)
         fig.tight_layout()
         fig.savefig(ut / "graf_traning.png")

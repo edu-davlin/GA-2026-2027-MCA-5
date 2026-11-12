@@ -22,6 +22,7 @@ ChatGPT och Claude, så att jämförelsen blir rättvis.
 
 import argparse
 import csv
+from datetime import datetime
 from pathlib import Path
 
 import torch
@@ -116,6 +117,14 @@ def main():
 
     # 3. Robusthet mot suddighet och ljus
     resultatfil = mapp / "robusthet.csv"
+
+    # Vilken modell, när och på vilket dataset - visas i graferna
+    (mapp / "testinfo.txt").write_text(
+        f"modell: {mapp.name}\n"
+        f"testad: {datetime.now():%Y-%m-%d %H:%M}\n"
+        f"dataset: {dataset.name}\n"
+        f"testbilder: {len(sökvägar)}\n",
+        encoding="utf-8")
     with open(resultatfil, "w", newline="", encoding="utf-8-sig") as f:
         skriv = csv.writer(f)
         skriv.writerow(["störning", "nivå", "träffsäkerhet"])
