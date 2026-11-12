@@ -1,0 +1,7 @@
+Skapad:           2026-11-12 15:34
+Byggde vidare på: - (tränad från noll)
+Dataset:          digital_1
+Former:           circle, square, triangle
+Epoker:           15
+Inlärningshast.:  0.001
+Bilder:           30000 train, 6000 test
