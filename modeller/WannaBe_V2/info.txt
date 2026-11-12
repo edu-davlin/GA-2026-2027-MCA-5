@@ -1,0 +1,7 @@
+Skapad:           2026-11-12 20:14
+Byggde vidare på: WannaBe_V1
+Dataset:          digital_2
+Former:           circle, square, triangle
+Epoker:           15
+Inlärningshast.:  0.0003
+Bilder:           30000 train, 6000 test

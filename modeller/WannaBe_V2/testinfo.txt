@@ -1,0 +1,4 @@
+modell: WannaBe_V2
+testad: 2026-11-12 20:28
+dataset: digital_2
+testbilder: 6000
